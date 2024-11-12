@@ -3,64 +3,33 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\LogRequests;
 use App\Http\Middleware\CheckAge;
+use App\Http\Controllers\HomePageController;
+use App\Http\Controllers\AboutUsController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ContactUsController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RestrictedAreaController;
 
-// Group routes that use the 'web' middleware and log requests
 Route::middleware(['web', LogRequests::class])->group(function () {
 
     // Login route at the root URL "/"
-    Route::get('/', function () {
-        return view('goTologin', ['username' => 'Guest'])->with('hideNavAndFooter', true);
-    })->name('goTologin');
+    Route::get('/', [LoginController::class, 'goTologin'])->name('goTologin');
 
     // Form submission route for homepage with username validation
-    Route::post('/homepage', function (Request $request) {
-        // Validate that the username only contains alphabetic characters (a-z, A-Z)
-        $request->validate([
-            'username' => 'required|alpha'
-        ], [
-            'username.alpha' => 'The username should only contain alphabetic characters.',
-            'username.required' => 'The username field is required.'
-        ]);
-
-        $username = $request->input('username', 'Guest');
-        return redirect("/homepage/$username");
-    });
+    Route::post('/homepage', [LoginController::class, 'submit']);
 
     // Homepage, About Us, Menu, Contact Us routes with dynamic username
-    Route::get('/homepage/{username}', function ($username) {
-        return view('homepage', ['username' => $username]);
-    })->name('homepage');
-
-    Route::get('/aboutus/{username}', function ($username) {
-        return view('aboutus', ['username' => $username]);
-    })->name('aboutus');
-
-    Route::get('/menu/{username}', function ($username) {
-        return view('menu', ['username' => $username]);
-    })->name('menu');
-
-    Route::get('/contactus/{username}', function ($username) {
-        return view('contactus', ['username' => $username]);
-    })->name('contactus');
+    Route::get('/homepage/{username}', [HomePageController::class, 'index'])->name('homepage');
+    Route::get('/aboutus/{username}', [AboutUsController::class, 'index'])->name('aboutus');
+    Route::get('/menu/{username}', [MenuController::class, 'index'])->name('menu');
+    Route::get('/contactus/{username}', [ContactUsController::class, 'index'])->name('contactus');
 
     // Route for restricted area with dynamic username
-    Route::get('/restrictedArea/{username}', function ($username) {
-        return view('restrictedArea', ['username' => $username]);
-    })->name('restrictedArea');
+    Route::get('/restrictedArea/{username}', [RestrictedAreaController::class, 'index'])->name('restrictedArea');
 
     // Middleware for age verification, restricted access, or homepage access post-login
-    Route::post('/homepage', function (Request $request) {
-        return view('homepage', ['username' => $request->input('username')]);
-    })->middleware(CheckAge::class);
+    Route::post('/homepage', [HomePageController::class, 'index'])->middleware(CheckAge::class);
 
     // Access Denied route
-    Route::get('/accessDenied', function () {
-        return view('accessDenied');
-    })->name('accessDenied');
-
-    // Fallback route for the login page, hidden navbar and footer
-    Route::get('/goTologin', function () {
-        return view('goTologin', ['username' => 'YourUsernameHere'])->with('hideNavAndFooter', true);
-    });
-
+    Route::get('/accessDenied', [HomePageController::class, 'accessDenied'])->name('accessDenied');
 });

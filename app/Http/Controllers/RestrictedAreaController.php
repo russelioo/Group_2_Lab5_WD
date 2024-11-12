@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class AboutUsController extends Controller
+class RestrictedAreaController extends Controller
 {
     public function index($username)
     {
-        return view('aboutus', ['username' => $username]);
+        return view('restrictedArea', ['username' => $username]);
     }
 }
